@@ -84,13 +84,7 @@ const app = new App({
 
 ### Component
 
-Basically component implements 2 methods - lifecycle hooks:
-
-```onInit``` - which is called when the component is initializing.
-
-```onDestroy``` - which is called when the component is destroying.
-
-Everything else is determined by the implementation of the component`s logic.
+Basically component implements 2 methods - lifecycle hooks ```onInit``` and ```onDestroy```. Everything else is determined by the implementation of the component logic.
 
 ```js
 import { Component } from 'nospa';
@@ -150,7 +144,8 @@ export default {
 
 #### Component instance properties
 
-|:-:|:--|
+| Property | Description |
+| :--- | :--- |
 | ```$app``` | App instance |
 | ```$name``` | name under which component registered |
 | ```$el``` | element to which the component bound |
@@ -192,7 +187,7 @@ To the one element can be bound multiple refs from different components (one ref
 </div>
 ```
 
-| ```$getRef(name)``` | get single ref object (first with this name will be returned) |
+```$getRef(name)``` - get single ref object (first with this name will be returned)
 
 ```html
 <div data-component="Alert">
@@ -211,7 +206,7 @@ export default class Alert extends Component {
 }
 ```
 
-| ```$getRefs(name)``` | get refs (all with this name will be returned) |
+```$getRefs(name)``` - get refs (all with this name will be returned)
 
 ```html
 <div data-component="Tabs">
@@ -232,7 +227,7 @@ export default class Tabs extends Component {
 }
 ```
 
-| ```$getRefFromEl(el)``` | get ref from an element (if bound) |
+```$getRefFromEl(el)``` - get ref from an element (if bound)
 
 ```html
 <div data-component="Tabs">
@@ -265,7 +260,7 @@ export default class Tabs extends Component {
 }
 ```
 
-> To attach delegated event listener use ```$onRef``` method
+> To attach delegated event listener use ```$onRef``` method instead
 
 #### Events
 
