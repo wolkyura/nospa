@@ -48,7 +48,9 @@ const app = new App({
       console.log('App method called successful!');
     },
   },
-  data: window.DATA || {},
+  data: {
+    foo: 'bar',
+  },
   componentAttr: 'data-component',
   componentPropsAttr: 'data-component-props',
   componentLazyAttr: 'data-component-lazy',
@@ -62,11 +64,6 @@ const app = new App({
   <div data-component="ComponentName"></div>
   <button type="button" data-directive="directiveName"></button>
 </div>
-<script>
-  window.DATA = {
-    foo: 'bar',
-  };
-</script>
 <script src="js/app.js"></script>
 <script>
   window.app.$methods.someMethod();
