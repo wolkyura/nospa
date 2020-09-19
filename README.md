@@ -8,7 +8,7 @@ nospa is the way to organize front-end code for non-SPA websites.
 - The app is the core object which controls components initialization/destruction. Init components on adding elements and destroy when removing. Provides lazy-loading and supports code-splitting.
 - The component is a piece of client-side logic.
 - Components are absolutely flexible and contain any logic inside. From simple event listener adding to Vue (or React, or any framework) component/widget initialization. Only 2 hooks (basically one) are required: ```onInit``` and ```onDestroy```.
-- Components can be set up from HTML with props from data-attribute. Every component receives props in the same format. 
+- Components can be set up from HTML with props from data-attribute. Every component receives props in the same format.
 - Components API provides helpers to be as abstract as possible from HTML code.
 - The directive is a couple of functions that run on an element when it adds to the DOM and when it removes.
 
@@ -28,7 +28,7 @@ npm i -S nospa
 
 ### App
 
-Set up and initialize app: 
+Set up and initialize app:
 
 ```javascript
 import { App } from 'nospa';
@@ -38,10 +38,10 @@ import directiveName from './directives/directiveName';
 const app = new App({
   el: '#app',
   components: {
-    ComponentName,  
+    ComponentName,
   },
   directives: {
-    directiveName,  
+    directiveName,
   },
   methods: {
     someMethod() {
@@ -69,12 +69,56 @@ const app = new App({
   window.app.$methods.someMethod();
 </script>
 ```
- 
+
 #### App methods
 
-> Documentation in progress
-> TODO: $getComponentFromEl $insertHTML $removeEl $addEl $replaceEl
- 
+```$getComponentFromEl```, ```$insertHTML```, ```$removeHTML```, ```$addEl```, ```$replaceEl``` -  wrappers for DOM methods, providing initialization and destruction of components.
+
+```$getComponentFromEl(el)``` - return the instance of component (if bound).
+- ```el``` - html element
+
+```$insertHTML(el, html)``` - insert html code inside the element.
+
+- ```html``` - html code
+
+DOM implementation:
+```js
+el.innerHTML = html || '';
+```
+
+```$removeHTML(el)``` - remove element
+
+DOM implementation:
+```js
+el.parentNode.removeChild(el);
+```
+
+```$addEl(el, parentEl, before = null)``` - add a new element to the parent element (by default at the end).
+
+- ```el``` - html element which will be added
+- ```parentEl``` - html element where new element will be added
+- ```before``` - before this child of ```parentEl``` new element will be added
+
+DOM implementation:
+```js
+parentEl.appendChild(el);
+```
+
+With ```before```:
+
+```js
+parentEl.insertBefore(el, before);
+```
+
+
+```$replaceEl(el, newEl)``` - replace element with new element.
+ - ```el``` - initial element
+- ```newEl``` - html element to be replaced
+
+```js
+el.parentNode.replaceChild(newEl, el);
+```
+
 #### App data
 
 > Documentation in progress
@@ -91,7 +135,7 @@ export default class Clicker extends Component {
     this.value = 0;
     this.buttonRef = this.$getRef('button');
     this.valueRef = this.$getRef('value');
-    
+
     if (buttonRef) {
       buttonRef.el.removeEventListener('click', this.handleClick);
     }
@@ -102,7 +146,7 @@ export default class Clicker extends Component {
       buttonRef.el.removeEventListener('click', this.handleClick)
     }
   }
-  
+
   handleClick(e) {
     this.value += 1;
     if (this.valueRef) {
@@ -120,7 +164,7 @@ export default {
     this.value = 0;
     this.buttonRef = this.$getRef('button');
     this.valueRef = this.$getRef('value');
-    
+
     if (buttonRef) {
       buttonRef.el.removeEventListener('click', this.handleClick);
     }
@@ -150,7 +194,7 @@ export default {
 
 #### Methods
 
-App [DOM manipulation methods](#app-methods) available in the component instance: ```$getComponentFromEl```, ```$insertHTML```, ```$removeEl```, ```$addEl```, ```$replaceEl``` 
+App [DOM manipulation methods](#app-methods) available in the component instance: ```$getComponentFromEl```, ```$insertHTML```, ```$removeEl```, ```$addEl```, ```$replaceEl```
 
 #### Refs
 
@@ -158,7 +202,7 @@ Refs system is the way to get elements inside the component root element without
 
 ```html
 <div data-component="Component">
-  <div data-component-ref="Component:refName"></div>    
+  <div data-component-ref="Component:refName"></div>
 </div>
 ```
 
@@ -166,7 +210,7 @@ Each ref can contain props object:
 
 ```html
 <div data-component="Component">
-  <div data-component-ref='{ "name": "Component:refName", "props": { "foo": "bar" } }'></div>    
+  <div data-component-ref='{ "name": "Component:refName", "props": { "foo": "bar" } }'></div>
 </div>
 ```
 
@@ -180,7 +224,7 @@ To the one element can be bound multiple refs from different components (one ref
         "AnotherComponent:anotherRefName"
       ]'>
       </div>
-  </div>    
+  </div>
 </div>
 ```
 
@@ -240,8 +284,8 @@ export default class Tabs extends Component {
   onInit() {
     this.$el.addEventListener('click', (e) => {
       let target = e.target;
-      let isFound = false; 
-      
+      let isFound = false;
+
       while (target !== this.$el && !isFound) {
         const ref = this.$getRefFromEl(target);
         if (ref && ref.name === 'button') {
@@ -249,7 +293,7 @@ export default class Tabs extends Component {
           isFound = true;
           return;
         }
-        
+
         target = target.parentNode;
       }
     });
@@ -261,8 +305,81 @@ export default class Tabs extends Component {
 
 #### Events
 
-> Documentation in progress
-> TODO: $onRef, $offRef, $emit, $on, $once, $off
+Each component has an event emitter. Events can be listened on the instance of component, as well as on the DOM element. There are some methods for listening delegated events on references.
+
+```$onRef(refName, eventName, handler)``` - add a listener to the component reference
+```$offRef(refName, eventName, handler)``` - remove a listener to component reference
+
+```html
+<div id="app">
+    <div data-component="Tabs">
+        <button data-component-ref="Tabs:button"></button>
+    </div>
+</div>
+```
+
+```js
+import { Component } from 'nospa';
+
+export default class Tabs extends Component {
+    onInit() {
+        this.$onRef('button', 'click', this.someHadler);
+    }
+
+    onDestroy() {
+        this.$offRef('button', 'click', this.someHandler);
+    }
+}
+```
+
+```$on(eventName, handler)``` - add a listener to the component
+```$off(eventName, handler)``` - remove a listener to component
+```$emit(eventName, data)``` - emits event
+
+```html
+<div id="app">
+    <div data-component="Tabs">
+        <div data-component-ref="Tabs:item" data-component="Panel">
+        </div>
+    </div>
+</div>
+```
+
+Panel:
+
+```js
+import { Component } from 'nospa';
+
+export default class Panel extends Component {
+    onInit() {
+        this.$emit('init', 'some data');
+    }
+}
+```
+
+Tabs:
+
+```js
+import { Component } from 'nospa';
+
+export default class Tabs extends Component {
+    onInit() {
+        const itemEl = this.$getRef('item').el;
+        this.panel = this.getComponentByEl(itemEl);
+        this.panel.$on('init', this.handler);
+    }
+
+    handler(data) {
+        console.log(data); // 'some data'
+    }
+
+    onDestroy() {
+        this.panel.$off('resize', this.handler);
+    }
+}
+```
+
+```$once(eventName)``` - similar to ```$on```, but can be executed only once
 
 ### Directive
 
